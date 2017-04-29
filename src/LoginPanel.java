@@ -242,7 +242,7 @@ public class LoginPanel extends JPanel{
         PrintWriter writer;
         String newAccount = "";
 
-        if (Arrays.hashCode(password) == Arrays.hashCode(confirmPassword) && !email.equals("") && !firstName.equals("")
+        if (Arrays.hashCode(password) == Arrays.hashCode(confirmPassword) && !email.equals("") && email.contains("@") && !firstName.equals("")
                 && !lastName.equals("")) {
             try {
                 fw = new FileWriter(userfile, true);
