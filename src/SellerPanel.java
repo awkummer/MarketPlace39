@@ -35,6 +35,8 @@ public class SellerPanel extends JPanel {
     private JList list;
     private JScrollPane scrollPane;
 
+
+    private JButton getInv;
     private JButton updateInfoBtn;
     private JButton updateInvBtn;
     private JButton addInvBtn;
@@ -62,6 +64,7 @@ public class SellerPanel extends JPanel {
     private ActionListener updateInvLis;
     private ActionListener addInvLis;
     private ActionListener removeInvLis;
+    private ActionListener getInvLis;
     private ListSelectionListener listLisener;
 
     private final String LINETAG = "<Line/>";
@@ -91,15 +94,7 @@ public class SellerPanel extends JPanel {
         addRemovePan = new JPanel();
         addRemovePan.setLayout(new BoxLayout(addRemovePan, BoxLayout.PAGE_AXIS));
 
-        listLisener = new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                selectedIndex = list.getSelectedIndex();
-                try {
-                    fillInv(list.getSelectedValue().toString());
-                } catch (Exception ignored) {
-                }
-            }
-        };
+
         updateInfoLis = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateInfo();
@@ -107,7 +102,7 @@ public class SellerPanel extends JPanel {
         };
         updateInvLis = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updateInvRow();
+                updateInvRow(list.getSelectedValue().toString());
             }
         };
         addInvLis = new ActionListener() {
@@ -120,6 +115,17 @@ public class SellerPanel extends JPanel {
                 removeInv("");
             }
         };
+
+        getInvLis = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                fillInv(list.getSelectedValue().toString());
+
+
+            }
+        };
+        getInv = new JButton("GetInv");
+        getInv .addActionListener(getInvLis);
         addInvBtn = new JButton("Add New Listing");
         addInvBtn.addActionListener(addInvLis);
         removeInvBtn = new JButton("Remove Selected Listing");
@@ -150,15 +156,16 @@ public class SellerPanel extends JPanel {
      */
     public void start(String sellerID) {
         this.sellerID = sellerID;
-//        updateInventory();
+        updateInventory();
         updateInventoryDisplay();
         add(scrollPane, BorderLayout.NORTH);
         setFocusable(true);
         setVisible(true);
-        list.addListSelectionListener(listLisener);
+//        list.addListSelectionListener(listLisener);
 
         updateInfoBtn.addActionListener(updateInfoLis);
         updateInvBtn.addActionListener(updateInvLis);
+        getInv.addActionListener(getInvLis);
         updateInfoPan.add(firstNameLbl);
         updateInfoPan.add(firstNameTf);
         updateInfoPan.add(lastNameLbl);
@@ -168,6 +175,8 @@ public class SellerPanel extends JPanel {
         updateInfoPan.add(confirmPasswordLbl);
         updateInfoPan.add(confirmPasswordTf);
         updateInfoPan.add(updateInfoBtn);
+        updateInfoPan.add(getInv);
+
 
         updateInvPan.add(priceLbl);
         updateInvPan.add(priceTf);
@@ -295,7 +304,7 @@ public class SellerPanel extends JPanel {
      * @param selected The selectedID option from the List
      */
     private void fillInv(String selected) {
-        for (int i = 1; i < inventory.length; i++) {
+        for (int i = 0; i < inventory.length; i++) {
             if (inventory[i][2].equals(selected)) {
                 selectedID = inventory[i][1];
                 priceTf.setText(inventory[i][3]);
@@ -311,7 +320,8 @@ public class SellerPanel extends JPanel {
      */
     private void updateInventoryDisplay() {
         //TODO This method needs to work. Not updating Textfields after add/remove. Not updating scrollpane after add/remove
-        updateInventory();
+//        updateInventory();
+        updateListings();
         model = null;
         list = null;
         scrollPane = null;
@@ -320,7 +330,7 @@ public class SellerPanel extends JPanel {
         scrollPane = new JScrollPane(list);
         for (Listing listing : listings) {
             model.removeElement(listing.getItem().getName());
-        }
+        } //Cange to removeall
         for (Listing listing : listings) {
             model.addElement(listing.getItem().getName());
         }
@@ -328,12 +338,12 @@ public class SellerPanel extends JPanel {
     }
 
     /**
-     *  Updates the inventory 2d array with content from inventory.txt
+     *  Updates the inventory 2d array with content from Inventory.txt
      */
     private void updateInventory() {
         inputDataInv = null;
-        setArray();
-        fillArray();
+        setArrayInv();
+        fillArrayInv();
         updateListings();
     }
 
@@ -343,7 +353,7 @@ public class SellerPanel extends JPanel {
     private void updateListings() {
         listings = null;
         listings = new ArrayList<Listing>();
-        for (int i = 1; i < inventory.length; i++) {
+        for (int i = 0; i < inventory.length; i++) {
             if (Integer.valueOf(inventory[i][0]).equals(Integer.valueOf(sellerID))) {
                 listings.add(new Listing(new Item(inventory[i][2], Double.valueOf(inventory[i][3]), inventory[i][4],
                         inventory[i][1], inventory[i][0]), Integer.valueOf(inventory[i][5]), inventory[i][0]));
@@ -354,7 +364,7 @@ public class SellerPanel extends JPanel {
     /**
      *  Fills the transactions 2d array with the contents from the transactions.txt file
      */
-    private void fillArray() {
+    private void fillArrayInv() {
         for(int j = 1; j < inputDataInv.length; j++) {
             String currentLine = inputDataInv[j];
             String[] tmpLine = currentLine.split(COLTAG);
@@ -368,13 +378,13 @@ public class SellerPanel extends JPanel {
     /**
      *  Sets the transactions 2d array to the appropriate size
      */
-    private void setArray() {
+    private void setArrayInv() {
         int rows = 0;
         int fields = 0;
         Scanner in = null;
         String content = "";
         try {
-            in = new Scanner(new File("Users.txt"));
+            in = new Scanner(new File("Inventory.txt"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -392,7 +402,7 @@ public class SellerPanel extends JPanel {
 //    /**
 //     *  Fills the inventory 2d array with the contents from the inventory.txt file
 //     */
-//    private void fillArray() {
+//    private void fillArrayInv() {
 //        for(int j = 0; j < inputDataInv.length; j++) {
 //            String currentLine = inputDataInv[j];
 //            String[] tmpLine = currentLine.split(COLTAG);
@@ -408,7 +418,7 @@ public class SellerPanel extends JPanel {
 //    /**
 //     *  Sets the inventory 2d array to the appropriate size
 //     */
-//    private void setArray() {
+//    private void setArrayInv() {
 //        inventory = null;
 //        int rows = 0;
 //        int fields = 0;
@@ -465,7 +475,7 @@ public class SellerPanel extends JPanel {
             fw = new FileWriter(userfile, false);
             writer = new PrintWriter(fw);
             writer.write("ID, Email, Password, Type, First Name, Last Name");
-            for (int i = 1; i < users.length; i++) {
+            for (int i = 0; i < users.length; i++) {
                 writer.write("\n" + LINETAG + users[i][0] + COLTAG + users[i][1] + COLTAG + users[i][2] + COLTAG + users[i][3] + COLTAG
                         + users[i][4] + COLTAG + users[i][5]);
             }
@@ -493,9 +503,9 @@ public class SellerPanel extends JPanel {
     /**
      * Updates inventory for selectedID item
      */
-    private void updateInvRow() {
-        for (int i = 1; i < inventory.length; i++) {
-            if (inventory[i][1].equals(selectedID)) {
+    private void updateInvRow(String selected) {
+        for (int i = 0; i < inventory.length; i++) {
+            if (inventory[i][2].equals(selected)) {
                 inventory[i][3] = priceTf.getText();
                 inventory[i][4] = descriptionTf.getText();
                 inventory[i][5] = quantityTf.getText();
@@ -515,8 +525,8 @@ public class SellerPanel extends JPanel {
         try {
             fw = new FileWriter(inventoryFile, false);
             writer = new PrintWriter(fw);
-            writer.write("Seller ID, Item ID, Name, Price, Description, Quantity");
-            for (int i = 1; i < inventory.length; i++) {
+            writer.write("Seller ID<Col/>Item ID<Col/>Name<Col/>Price<Col/>Description<Col/>Quantity");
+            for (int i = 0; i < inventory.length; i++) {
                 writer.write("\n" + LINETAG + inventory[i][0] + COLTAG + inventory[i][1] + COLTAG
                         + inventory[i][2] + COLTAG + inventory[i][3] + COLTAG + inventory[i][4] + COLTAG + inventory[i][5]);
             }
@@ -525,7 +535,6 @@ public class SellerPanel extends JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        updateInventoryDisplay();
     }
 
     /**
@@ -549,13 +558,33 @@ public class SellerPanel extends JPanel {
                 writer.write("\n" + LINETAG + sellerID + COLTAG + itemID + COLTAG + name + COLTAG + price + COLTAG + description + COLTAG + quantity);
                 writer.close();
                 fw.close();
+                //Deep copy to tmp array, reset inventory? to one size longer, refill inventory? with ^item as the last element
+                String[][] temp = new String[inventory.length][inventory[0].length];
+                for (int i = 0; i < temp.length; i++) {
+                    for (int j = 0; j < temp[0].length; j++) {
+                        temp[i][j] = inventory[i][j];
+                    }
+                }
+                inventory = new String[temp.length + 1] [temp[0].length];
+                for (int i = 0; i < temp.length; i++) {
+                    for (int j = 0; j < temp[0].length; j++) {
+                        inventory[i][j] = temp[i][j];
+                    }
+                }
+                inventory[inventory.length - 1][0] = sellerID;
+                inventory[inventory.length - 1][1] = itemID;
+                inventory[inventory.length - 1][2] = name;
+                inventory[inventory.length - 1][3] = price;
+                inventory[inventory.length - 1][4] = description;
+                inventory[inventory.length - 1][5] = quantity;
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            updateInventoryDisplay();
         } else {
             JOptionPane.showMessageDialog(this, "Incorrect information entered. Try again...", "Error", JOptionPane.ERROR_MESSAGE);
         }
+        updateInventoryDisplay();
     }
 
     /**
@@ -564,7 +593,7 @@ public class SellerPanel extends JPanel {
      */
     private String nextItemID() {
         String max = "-1";
-        for (int i = 1; i < inventory.length; i++) {
+        for (int i = 0; i < inventory.length; i++) {
             if (Integer.valueOf(inventory[i][1]) > Integer.valueOf(max)) {
                 max = inventory[i][1];
             }
@@ -579,7 +608,7 @@ public class SellerPanel extends JPanel {
     private void removeInv(String pos) {
 //        model.removeElementAt(selectedIndex);
         if (!selectedID.equals("")) {
-            for (int i = 1; i < inventory.length; i++) {
+            for (int i = 0; i < inventory.length; i++) {
                 if (inventory[i][1].equals(selectedID)) {
                     String[] tmp = inventory[i];
                     for (int j = i; j + 1 < inventory.length; j++) {
